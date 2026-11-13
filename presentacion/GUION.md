@@ -1,25 +1,32 @@
-# Guion de la presentación · CryptoRisk & Trend SBC
+# Guion de la presentación · CryptoRisk & Trend SBC · Grupo MORADO
 
-Diapositivas: `CryptoRisk_SBC.pptx` (12, cada una con notas del orador que sirven de guion). Duración sugerida: ~12 minutos.
+Diapositivas: `CryptoRisk_SBC.pptx`. Son 16 diapositivas y cada una trae notas del orador que sirven de guion, para unos 15 minutos.
+La exposición cuenta la historia del proyecto en 5 capítulos, en el mismo orden de los requisitos del enunciado. El indicador de arriba a la derecha muestra en qué capítulo va la historia.
+Los elementos de cada diapositiva aparecen solos, en orden, al entrar a ella (no hace falta hacer clic).
 
-| # | Diapositiva | Contenido clave | Apoyo visual |
-| :-: | :--- | :--- | :--- |
-| 1 | Portada | Título, integrantes, curso (IAIA), aviso académico | Logo / imagen de gráfico de velas |
-| 2 | Problema y dominio | Swing trading en criptomonedas: decidir comprar o mantener liquidez con datos incompletos | Gráfico de precio con EMA200 y RSI |
-| 3 | ¿Por qué un SBC? | Jerarquía datos → estados → recomendación; trazabilidad; incertidumbre; viabilidad | Lista de 4 ventajas |
-| 4 | Lógica y cláusulas de Horn | Un solo literal positivo; por qué `A ∨ B ⇒ C` se divide (R6a/R6b) | Fórmula de Horn + ejemplo R6 |
-| 5 | Base de conocimiento | 11 proposiciones (6 entradas, 3 intermedias, 2 metas) y 7 reglas | Diagrama Mermaid del README |
-| 6 | Lógica trivalente | `YES` / `NO` / `UNKNOWN`; ausente ≠ `UNKNOWN`; rol de R4 | Tabla de valores |
-| 7 | Arquitectura | KB vs FB; `DevelopmentSubsystem` (experto) y `QuerySubsystem` (usuario); motor del lab05 | Diagrama de bloques |
-| 8 | Demo forward | Escenarios 1, 2 y 3 (`forward`); mostrar R3 bloqueada y R4 como respaldo | Captura de salida del notebook |
-| 9 | Demo backward | Escenario 4: preguntas solo por datos necesarios y su «¿Por qué?» | Grabación o captura de la interacción |
-| 10 | Explicabilidad | «Cómo» con `explain` y «por qué» con `why` | Árbol de prueba indentado |
-| 11 | Limitaciones | Conflicto de metas (escenario 5), `resolver_conflicto`, umbrales fijos, sin grados de certeza | Salida del escenario 5 |
-| 12 | Conclusiones y futuro | Ventajas de la IA simbólica, trabajo futuro (certeza, difusa, más indicadores), preguntas | Resumen en 3 viñetas |
+| # | Capítulo | Diapositiva | Requisito que cubre | Robot |
+| :-: | :--- | :--- | :--- | :--- |
+| 1 | — | Portada · Grupo MORADO | — | señala el título, sonriente |
+| 2 | El reto | Un problema real, resuelto con IA simbólica | Objetivo y restricciones | mira hacia arriba, pensando |
+| 3 | El reto | El dominio: ¿comprar o esperar en cripto? | Describir el dominio | examina con la lupa |
+| 4 | El reto | ¿Por qué funciona con reglas? | Justificar viabilidad | ojos entrecerrados, concentrado |
+| 5 | El modelo | 11 proposiciones: los hechos del sistema | Listar símbolo y significado | atento, señala la lista |
+| 6 | El modelo | 7 reglas: el conocimiento del experto | Reglas del experto, Horn | mira hacia arriba junto a la red |
+| 7 | El modelo | Así se encadena el conocimiento | Conexión antecedentes-consecuentes | concentrado en la cadena |
+| 8 | El modelo | Tres estados de conocimiento | YES / NO / UNKNOWN | pensativo, con un «?» |
+| 9 | El motor | Dos subsistemas, un motor | Motor del laboratorio | inspecciona con la lupa |
+| 10 | El motor | Así se construye la base de conocimiento | Usar el Subsistema de Desarrollo | atento junto a la red |
+| 11 | El motor | Cinco bases de hechos, cinco historias | Al menos dos bases de hechos | sonríe y presenta |
+| 12 | Inferencia | Forward: de los datos a la decisión | Forward chaining | ojos muy abiertos + bombillo |
+| 13 | Inferencia | Backward: pregunta solo lo necesario | Backward con interacción | atento, globo «Necesito 4 datos» |
+| 14 | Inferencia | Explicabilidad: el cómo y el por qué | Trazabilidad | concentrado, señala el árbol |
+| 15 | Cierre | Lo que aprendimos: un límite de Horn | Resultados y limitaciones | sorprendido + «!» |
+| 16 | Cierre | Conclusiones · ¡Gracias! | Conclusiones | guiña un ojo |
 
-## Checklist previo a la entrega
+## Checklist previo a la sustentación
 
 - [ ] Ejecutar el notebook completo (`Kernel → Restart & Run All`) sin errores.
-- [ ] Verificar que el orden de preguntas del escenario 4 coincide con la diapositiva 9.
-- [ ] Agregar a los demás integrantes (si los hay) en el notebook y en la portada.
-- [ ] Incluir el aviso legal (no es asesoría financiera) en portada o cierre.
+- [ ] Para la demo del backward, poner `INTERACTIVO = True` en la sección 6 y responder en vivo.
+- [ ] Verificar que el orden de preguntas del escenario 4 coincide con la diapositiva 13.
+- [ ] Presentar desde Windows o instalar la fuente Segoe UI: la presentación la usa.
+- [ ] Las diapositivas no muestran código: los detalles técnicos están en el notebook y en las notas del orador.

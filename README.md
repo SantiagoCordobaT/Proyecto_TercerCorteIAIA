@@ -4,7 +4,7 @@
 
 ### Sistema Basado en Conocimiento para la evaluación de riesgo y decisiones de *swing trading* en criptomonedas
 
-![Python](https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?style=for-the-badge&logo=jupyter&logoColor=white)
 ![IA Simbólica](https://img.shields.io/badge/IA-Simbólica-8A2BE2?style=for-the-badge)
 ![Lógica](https://img.shields.io/badge/Lógica-Trivalente-00B894?style=for-the-badge)
@@ -43,7 +43,7 @@
 | 🟢 `recomendar_compra` | Abrir posición de compra (riesgo moderado/bajo) |
 | 🔴 `recomendar_caja` | Mantener liquidez y evitar operar (alto riesgo) |
 
-Se construye sobre el motor del **Laboratorio 05** (`TValue`, `TAtom`, `TRule`, `TKnowledgeBase`, `TFactBase`, `forward`, `backward`, `explain`) y demuestra: ⏩ forward chaining, ⏪ backward chaining interactivo y 🔍 explicabilidad.
+Se construye sobre el motor del **Laboratorio 05** (`TValue`, `TAtom`, `TRule`, `TKnowledgeBase`, `TFactBase`, `forward`, `backward`, `explain`, `why`) y demuestra: ⏩ forward chaining, ⏪ backward chaining interactivo y 🔍 explicabilidad.
 
 ---
 
@@ -149,9 +149,10 @@ flowchart LR
 | `fb.set(atom, value, source)` | `source` = `"user"` o el nombre de la regla |
 | ⏩ `forward(kb, fb)` | Dispara reglas hasta punto fijo; origen del hecho = nombre de regla |
 | ⏪ `backward(kb, fb, p)` | Recursivo; `ask` solo para átomos que ninguna regla concluye |
-| 🔍 `explain(kb, fb, p)` | Recorre los orígenes hasta los hechos del usuario |
+| 🔍 `explain(kb, fb, p)` | **Cómo:** recorre los orígenes hasta los hechos del usuario |
+| 💬 `why(kb, meta, dato)` | **Por qué:** la cadena de reglas que conecta un dato preguntado con la meta |
 | 🛠️ `DevelopmentSubsystem` | Construir la KB (átomos y reglas) |
-| 🔎 `QuerySubsystem` | Hechos, `forward`, `backward`, `explain` |
+| 🔎 `QuerySubsystem` | Menú del usuario: hechos, `forward`, `backward`, `explain` |
 
 ---
 
@@ -206,10 +207,11 @@ recomendar_compra = YES  <- R5
 | KB cargada con el Subsistema de Desarrollo | Notebook §4 (`DevelopmentSubsystem`) |
 | Al menos dos bases de hechos | Escenarios 1, 2, 3 y 5 |
 | Forward chaining | Escenarios 1, 2, 3, 5 |
-| Backward chaining con interacción | Escenario 4 (`ask`) |
+| Backward chaining con interacción | Escenario 4 (`ask`, con el «por qué» de cada pregunta) · Notebook §6 |
+| Ejecución interactiva (Subsistema de Consulta) | Notebook §9: sesión con el menú del usuario |
 | Explicabilidad (cómo / por qué) | [Explicabilidad](#-explicabilidad) · Notebook §7 |
 | Entregable: Jupyter Notebook | `CryptoRisk_SBC.ipynb` |
-| Entregable: Presentación | `presentacion/CryptoRisk_SBC.pptx` (12 diapositivas con notas del orador) · guion en `presentacion/GUION.md` |
+| Entregable: Presentación | `presentacion/CryptoRisk_SBC.pptx` (16 diapositivas animadas con notas del orador) · guion en `presentacion/GUION.md` |
 
 ---
 
@@ -222,11 +224,12 @@ Proyecto_TercerCorte/
 │   ├── __init__.py
 │   └── motor.py              # Motor del lab05 + explain, why y subsistemas
 ├── presentacion/
-│   ├── CryptoRisk_SBC.pptx   # Diapositivas (12, con notas del orador)
+│   ├── CryptoRisk_SBC.pptx   # Diapositivas (16, animadas, con notas del orador)
 │   ├── GUION.md              # Guion y checklist de la presentación
-│   └── img/                  # Imágenes del robot usadas en las diapositivas
+│   └── img/                  # El robot en 16 poses y expresiones, una por diapositiva
 ├── pyproject.toml
-├── .python-version           # 3.13
+├── .python-version           # 3.13 (versión del laboratorio)
+├── .gitignore
 └── README.md
 ```
 
@@ -245,7 +248,9 @@ pip install jupyterlab
 jupyter lab CryptoRisk_SBC.ipynb
 ```
 
-Requiere Python 3.13 (igual que el laboratorio).
+Requiere Python 3.10 o superior. Se verificó con Python 3.11; el laboratorio usa 3.13.
+
+Para responder en vivo las preguntas del backward y usar el menú de consulta, ponga `INTERACTIVO = True` en la sección 6 del notebook.
 
 ---
 
@@ -258,7 +263,8 @@ Requiere Python 3.13 (igual que el laboratorio).
 - [x] 5. Completar los textos del notebook (dominio, trivalencia, conclusiones).
 - [x] 6. Construir las diapositivas (`presentacion/CryptoRisk_SBC.pptx`).
 - [x] 7. Enlazar el repositorio.
-- [ ] 8. Agregar a los demás integrantes del equipo (si los hay) en el notebook y en la portada.
+- [x] 8. Integrantes del Grupo Morado en la portada.
+- [x] 9. Sesión interactiva con el Subsistema de Consulta (notebook §9).
 
 ---
 
@@ -279,6 +285,6 @@ Proyecto de **fines estrictamente académicos**. Sus recomendaciones **no consti
 
 <div align="center">
 
-*CryptoRisk & Trend SBC · Proyecto Tercer Corte · IAIA · IA Simbólica*
+*CryptoRisk & Trend SBC · Grupo MORADO (Santiago Andres Cordoba Torres · Cesar Morales) · Proyecto Tercer Corte · IAIA*
 
 </div>
