@@ -167,28 +167,29 @@ Cinco bases de hechos distintas (el enunciado pide al menos dos). Todas se ejecu
 | 4 | ❓ Meta específica | ⏪ | FB vacía; meta `recomendar_compra` | Pregunta solo por `ema200`, `soporte`, `sobreventa`, `volumen` (en ese orden) |
 | 5 | ⚖️ Conflicto | ⏩ | escenario 1 + `noticias=YES` | Se deducen **ambas** metas (limitación documentada) |
 
-Deducción esperada del escenario 1:
+Deducción real del escenario 1 (las reglas se recorren en orden de registro, así que R5 ya se dispara en la primera pasada):
 
 ```text
 Pasada 1:  R1 → tendencia_saludable
            R3 → oportunidad_compra
-Pasada 2:  R5 → recomendar_compra   🟢
+           R5 → recomendar_compra   🟢
+Pasada 2:  sin hechos nuevos → punto fijo
 ```
 
 ---
 
 ## 🔍 Explicabilidad
 
-`explain` recorre el origen guardado en la `TFactBase` desde la meta hasta los hechos del usuario (el **cómo**). Además, en `backward` se justifica cada pregunta (el **por qué**: qué regla necesita ese dato y para qué meta). Salida esperada para el escenario 1 (la salida real se genera en el notebook):
+`explain` recorre el origen guardado en la `TFactBase` desde la meta hasta los hechos del usuario (el **cómo**). Además, en `backward` se justifica cada pregunta (el **por qué**: qué regla necesita ese dato y para qué meta). Salida real del escenario 1:
 
 ```text
-recomendar_compra = YES        ← R5
-  tendencia_saludable = YES    ← R1
-    precio_sobre_ema200 = YES  ← user
-    soporte_tecnico_clave = YES← user
-  oportunidad_compra = YES     ← R3
-    rsi_sobreventa = YES       ← user
-    volumen_creciente = YES    ← user
+recomendar_compra = YES  <- R5
+  tendencia_saludable = YES  <- R1
+    precio_sobre_ema200 = YES  <- user
+    soporte_tecnico_clave = YES  <- user
+  oportunidad_compra = YES  <- R3
+    rsi_sobreventa = YES  <- user
+    volumen_creciente = YES  <- user
 ```
 
 ---
@@ -208,7 +209,7 @@ recomendar_compra = YES        ← R5
 | Backward chaining con interacción | Escenario 4 (`ask`) |
 | Explicabilidad (cómo / por qué) | [Explicabilidad](#-explicabilidad) · Notebook §7 |
 | Entregable: Jupyter Notebook | `CryptoRisk_SBC.ipynb` |
-| Entregable: Presentación | `presentacion/GUION.md` (guion de 12 diapositivas) |
+| Entregable: Presentación | `presentacion/CryptoRisk_SBC.pptx` (12 diapositivas con notas del orador) · guion en `presentacion/GUION.md` |
 
 ---
 
@@ -219,9 +220,11 @@ Proyecto_TercerCorte/
 ├── CryptoRisk_SBC.ipynb      # Notebook: dominio, KB, escenarios, explicabilidad
 ├── motor/
 │   ├── __init__.py
-│   └── motor.py              # Motor del lab05 (TODO con pseudocódigo por completar)
+│   └── motor.py              # Motor del lab05 + explain, why y subsistemas
 ├── presentacion/
-│   └── GUION.md              # Guion y checklist de la presentación
+│   ├── CryptoRisk_SBC.pptx   # Diapositivas (12, con notas del orador)
+│   ├── GUION.md              # Guion y checklist de la presentación
+│   └── img/                  # Imágenes del robot usadas en las diapositivas
 ├── pyproject.toml
 ├── .python-version           # 3.13
 └── README.md
@@ -232,8 +235,8 @@ Proyecto_TercerCorte/
 ## 🚀 Cómo ejecutarlo
 
 ```bash
-git clone <URL-DEL-REPOSITORIO>
-cd Proyecto_TercerCorte
+git clone https://github.com/SantiagoCordobaT/Proyecto_TercerCorteIAIA.git
+cd Proyecto_TercerCorteIAIA
 
 python -m venv .venv
 .venv\Scripts\activate            # Linux/Mac: source .venv/bin/activate
@@ -248,13 +251,14 @@ Requiere Python 3.13 (igual que el laboratorio).
 
 ## 🛣️ Hoja de ruta de desarrollo
 
-- [ ] 1. Completar `motor/motor.py` copiando/adaptando el motor de `lab05.ipynb` (clases, `applies`, `forward`, `ask`, `deduce`, `backward`).
-- [ ] 2. Implementar `explain` (y `why`) y los subsistemas `DevelopmentSubsystem` / `QuerySubsystem`.
-- [ ] 3. Cargar la KB en el notebook (§4) y demostrar la validación de átomos no registrados.
-- [ ] 4. Ejecutar los escenarios 1–5 y pegar las salidas reales.
-- [ ] 5. Completar los textos `*COMPLETE*` del notebook (dominio, trivalencia, conclusiones).
-- [ ] 6. Construir la presentación siguiendo `presentacion/GUION.md`.
-- [ ] 7. Reemplazar `<URL-DEL-REPOSITORIO>` y los integrantes.
+- [x] 1. Completar `motor/motor.py` copiando/adaptando el motor de `lab05.ipynb` (clases, `applies`, `forward`, `ask`, `deduce`, `backward`).
+- [x] 2. Implementar `explain` (y `why`) y los subsistemas `DevelopmentSubsystem` / `QuerySubsystem`.
+- [x] 3. Cargar la KB en el notebook (§4) y demostrar la validación de átomos no registrados.
+- [x] 4. Ejecutar el notebook (Restart & Run All) para guardar las salidas reales de los escenarios 1–5.
+- [x] 5. Completar los textos del notebook (dominio, trivalencia, conclusiones).
+- [x] 6. Construir las diapositivas (`presentacion/CryptoRisk_SBC.pptx`).
+- [x] 7. Enlazar el repositorio.
+- [ ] 8. Agregar a los demás integrantes del equipo (si los hay) en el notebook y en la portada.
 
 ---
 

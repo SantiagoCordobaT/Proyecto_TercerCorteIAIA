@@ -1,10 +1,10 @@
 """Motor de inferencia (Laboratorio 05) para CryptoRisk & Trend SBC.
 
 Estado del archivo:
-    ✅ Implementado (tomado del lab05): TValue, TAtom, TRule, TKnowledgeBase,
-       TFactBase, applies, forward, ask, deduce, backward.
-    ✏️ Por completar (pseudocódigo): explain, why, DevelopmentSubsystem,
-       QuerySubsystem.
+    Componentes del lab05: TValue, TAtom, TRule, TKnowledgeBase, TFactBase,
+    applies, forward, ask, deduce, backward.
+    Componentes de explicabilidad y uso: explain (cómo), why (por qué),
+    DevelopmentSubsystem (experto) y QuerySubsystem (usuario).
 
 Convenciones del laboratorio (NO cambiarlas):
     - TRule(name, antecedents: list[TAtom], consequent: TAtom)
@@ -300,10 +300,12 @@ def deduce(kb: TKnowledgeBase, p: TAtom) -> list[TRule]:
 #   - `active` evita ciclos infinitos en reglas circulares.
 # =====================================================================
 def backward(
-    kb: TKnowledgeBase, fb: TFactBase, p: TAtom
+    kb: TKnowledgeBase, fb: TFactBase, p: TAtom, explain_questions: bool = True
 ) -> tuple[TValue, TFactBase]:
     """Inferencia hacia atrás.
 
+    :param explain_questions: Si es True, antes de cada pregunta al usuario
+        se imprime el "por qué" (ver `why`).
     :return: El valor de p y la base de hechos actualizada.
     """
     active: set[TAtom] = set()
@@ -316,6 +318,8 @@ def backward(
 
         rules = deduce(kb, goal)
         if not rules:
+            if explain_questions:
+                print(f"  ¿Por qué? {why(kb, p, goal)}")
             value = ask(goal)
             fb.set(goal, value, "user")
             return value
@@ -334,7 +338,7 @@ def backward(
 
 
 # =====================================================================
-# 11. explain — EL "CÓMO" DE UNA CONCLUSIÓN            ✏️ POR COMPLETAR
+# 11. explain — EL "CÓMO" DE UNA CONCLUSIÓN
 # ---------------------------------------------------------------------
 # TEORÍA: un SBC debe justificar sus conclusiones. Como cada hecho de la
 # FB guarda su origen, la explicación es un recorrido recursivo del
@@ -344,41 +348,68 @@ def backward(
 # esto?" mostrando la secuencia de reglas encadenadas. La sangría
 # (level) refleja la profundidad en el árbol.
 # =====================================================================
+def _label(value: TValue) -> str:
+    """Nombre legible de un valor. Se compara con `is` porque True == 1."""
+    if value is TValue.YES:
+        return "YES"
+    if value is TValue.NO:
+        return "NO"
+    return "UNKNOWN"
+
+
 def explain(kb: TKnowledgeBase, fb: TFactBase, p: TAtom, level: int = 0) -> str:
     """CÓMO: recorre los orígenes de la FB desde p hasta los hechos del usuario."""
-    # PSEUDOCODIGO:
-    #   origen = fb.source(p)
-    #   línea = sangría(level) + p.symbol + " = " + valor + "  <- " + origen
-    #   si origen es None -> "no está en la FB"
-    #   si origen == "user" -> retornar línea (hoja)
-    #   si no: regla = kb.obtain(origen)
-    #       para cada antecedente de la regla:
-    #           línea += "\n" + explain(kb, fb, antecedente, level + 1)
-    #   retornar línea
-    raise NotImplementedError
+    indent = "  " * level
+    source = fb.source(p)
+    if source is None:
+        return f"{indent}{p.symbol} = (no está en la FB)"
+
+    line = f"{indent}{p.symbol} = {_label(fb.value(p))}  <- {source}"
+    # Hoja del árbol: dato aportado por el usuario (o regla ya no registrada).
+    if source == "user" or not kb.has_rule(source):
+        return line
+
+    parts = [line]
+    for antecedent in kb.obtain(source).antecedents:
+        parts.append(explain(kb, fb, antecedent, level + 1))
+    return "\n".join(parts)
 
 
 # =====================================================================
-# 12. why — EL "POR QUÉ" DE UNA PREGUNTA              ✏️ POR COMPLETAR
+# 12. why — EL "POR QUÉ" DE UNA PREGUNTA
 # ---------------------------------------------------------------------
 # TEORÍA: complemento del "cómo". Mientras el "cómo" explica una
 # conclusión ya obtenida, el "por qué" justifica una PREGUNTA que el
 # sistema hace al usuario: indica qué regla necesita ese dato y qué meta
 # se persigue con ella. Se obtiene subiendo por las reglas donde el
 # átomo preguntado es antecedente hasta llegar a la meta consultada.
-# Aumenta la confianza del usuario y evita preguntas "misteriosas".
+# Se usa una búsqueda en anchura (BFS) para devolver la cadena MÁS CORTA
+# y un conjunto de visitados para tolerar reglas circulares.
 # =====================================================================
 def why(kb: TKnowledgeBase, goal: TAtom, asked: TAtom) -> str:
     """POR QUÉ se pregunta `asked` mientras se persigue `goal`."""
-    # PSEUDOCODIGO:
-    #   buscar reglas donde `asked` es antecedente y que (transitivamente)
-    #   conducen a `goal` (subir por los consecuentes hasta llegar a goal)
-    #   retornar texto "Pregunto X porque R? lo necesita para Y ... para goal"
-    raise NotImplementedError
+    # Cada elemento de la cola: (átomo actual, reglas recorridas hasta él).
+    queue: list[tuple[TAtom, list[TRule]]] = [(asked, [])]
+    visited: set[TAtom] = {asked}
+
+    while queue:
+        current, path = queue.pop(0)
+        if current == goal and path:
+            chain = " -> ".join(f"{r.name} (concluye {r.consequent.symbol})" for r in path)
+            return (
+                f"Pregunto «{asked.meaning}» porque es necesaria para {chain}, "
+                f"que lleva a la meta {goal.symbol}."
+            )
+        for rule in kb.rules.values():
+            if current in rule.antecedents and rule.consequent not in visited:
+                visited.add(rule.consequent)
+                queue.append((rule.consequent, [*path, rule]))
+
+    return f"«{asked.meaning}» no interviene en ninguna regla que lleve a «{goal.meaning}»."
 
 
 # =====================================================================
-# 13. DevelopmentSubsystem — SUBSISTEMA DE DESARROLLO  ✏️ POR COMPLETAR
+# 13. DevelopmentSubsystem — SUBSISTEMA DE DESARROLLO
 # ---------------------------------------------------------------------
 # TEORÍA: arquitectura clásica de un SBC con dos subsistemas separados:
 #   - DESARROLLO (lo usa el EXPERTO): adquisición y edición del
@@ -386,41 +417,81 @@ def why(kb: TKnowledgeBase, goal: TAtom, asked: TAtom) -> str:
 #   - CONSULTA (lo usa el USUARIO): usa la KB para deducir y explicar.
 # Separarlos permite que el experto cambie el conocimiento sin tocar el
 # motor, y que el usuario consulte sin poder alterar la KB. Este
-# subsistema debe validar la entrada (la KB ya rechaza reglas con
-# átomos no registrados con ValueError).
+# subsistema valida la entrada (la KB rechaza reglas con átomos no
+# registrados con ValueError y aquí se muestra el mensaje).
 # =====================================================================
 class DevelopmentSubsystem:
     """Subsistema de desarrollo: construir la KB (lo usa el experto)."""
 
     def __init__(self, kb: TKnowledgeBase) -> None:
-        # TODO: guardar kb en self.kb
-        raise NotImplementedError
+        self.kb = kb
 
     def add_atom(self) -> None:
-        # PSEUDOCODIGO: pedir symbol y meaning; kb.add(TAtom(...))
-        raise NotImplementedError
+        """Pedir symbol y meaning y registrar la proposición."""
+        symbol = input("Símbolo (identificador): ").strip()
+        meaning = input("Significado (lenguaje natural): ").strip()
+        if not symbol or not meaning:
+            print("El símbolo y el significado no pueden estar vacíos.")
+            return
+        self.kb.add(TAtom(symbol, meaning))
+        print(f"Proposición '{symbol}' registrada.")
 
     def add_rule(self) -> None:
-        # PSEUDOCODIGO: pedir name, antecedentes (symbols separados por coma)
-        #   y consecuente; resolverlos con kb.atom(); kb.add(TRule(...));
-        #   capturar ValueError y mostrar el mensaje
-        raise NotImplementedError
+        """Pedir nombre, antecedentes y consecuente; validar y registrar."""
+        name = input("Nombre de la regla: ").strip()
+        raw = input("Antecedentes (símbolos separados por coma): ")
+        symbols = [s.strip() for s in raw.split(",") if s.strip()]
+        consequent_symbol = input("Consecuente (símbolo): ").strip()
+
+        antecedents = [self.kb.atom(s) for s in symbols]
+        consequent = self.kb.atom(consequent_symbol)
+        unknown = [s for s, a in zip(symbols, antecedents) if a is None]
+        if consequent is None:
+            unknown.append(consequent_symbol)
+        if not name or not antecedents or unknown:
+            detail = f" Proposiciones no registradas: {', '.join(unknown)}." if unknown else ""
+            print(f"Regla inválida.{detail}")
+            return
+        try:
+            self.kb.add(TRule(name, antecedents, consequent))
+        except ValueError as error:
+            print(f"Error: {error}")
+            return
+        print(f"Regla '{name}' registrada.")
 
     def show(self) -> None:
-        # PSEUDOCODIGO: imprimir átomos y reglas (str(regla))
-        raise NotImplementedError
+        """Imprimir las proposiciones y reglas de la KB."""
+        print(f"Proposiciones ({len(self.kb.atoms)}):")
+        for atom in sorted(self.kb.atoms, key=lambda a: a.symbol):
+            print(f"  - {atom.symbol}: {atom.meaning}")
+        print(f"Reglas ({len(self.kb.rules)}):")
+        for rule in self.kb.rules.values():
+            print(f"  - {rule}")
 
     def reset(self) -> None:
-        # PSEUDOCODIGO: vaciar kb.atoms y kb.rules
-        raise NotImplementedError
+        """Vaciar la KB completa."""
+        self.kb.atoms.clear()
+        self.kb.rules.clear()
+        print("Base de conocimiento reiniciada.")
 
     def run(self) -> None:
-        # PSEUDOCODIGO: bucle de menú 1) átomo 2) regla 3) mostrar 4) reiniciar 0) salir
-        raise NotImplementedError
+        """Menú interactivo del experto."""
+        actions = {"1": self.add_atom, "2": self.add_rule, "3": self.show, "4": self.reset}
+        while True:
+            print("\n[Desarrollo] 1) Agregar proposición  2) Agregar regla  "
+                  "3) Mostrar KB  4) Reiniciar  0) Salir")
+            option = input("Opción: ").strip()
+            if option == "0":
+                return
+            action = actions.get(option)
+            if action is None:
+                print("Opción no válida.")
+            else:
+                action()
 
 
 # =====================================================================
-# 14. QuerySubsystem — SUBSISTEMA DE CONSULTA          ✏️ POR COMPLETAR
+# 14. QuerySubsystem — SUBSISTEMA DE CONSULTA
 # ---------------------------------------------------------------------
 # TEORÍA: es la cara del SBC hacia el usuario final. Trabaja sobre la FB
 # (conocimiento particular del caso) y ofrece los servicios del motor:
@@ -432,34 +503,81 @@ class DevelopmentSubsystem:
 class QuerySubsystem:
     """Subsistema de consulta: usar el conocimiento (lo usa el usuario)."""
 
+    _VALUES = {"YES": TValue.YES, "NO": TValue.NO, "UNKNOWN": TValue.UNKNOWN}
+
     def __init__(self, kb: TKnowledgeBase, fb: TFactBase) -> None:
-        # TODO: guardar kb y fb
-        raise NotImplementedError
+        self.kb = kb
+        self.fb = fb
+
+    def _ask_atom(self, prompt: str) -> TAtom | None:
+        """Pedir un símbolo y resolverlo contra la KB (None si no existe)."""
+        symbol = input(prompt).strip()
+        atom = self.kb.atom(symbol)
+        if atom is None:
+            print(f"La proposición '{symbol}' no existe en la KB.")
+        return atom
 
     def add_fact(self) -> None:
-        # PSEUDOCODIGO: pedir symbol y valor (YES/NO/UNKNOWN); fb.set(..., "user")
-        raise NotImplementedError
+        """Registrar un hecho observado, con origen 'user'."""
+        atom = self._ask_atom("Símbolo del hecho: ")
+        if atom is None:
+            return
+        value = self._VALUES.get(input("Valor (YES/NO/UNKNOWN): ").strip().upper())
+        if value is None:
+            print("Valor no válido.")
+            return
+        self.fb.set(atom, value, "user")
 
     def infer(self) -> None:
-        # PSEUDOCODIGO: copiar claves previas, forward(kb, fb), mostrar hechos nuevos
-        raise NotImplementedError
+        """Forward chaining; muestra solo los hechos recién deducidos."""
+        previous = set(self.fb.facts)
+        forward(self.kb, self.fb)
+        new = [a for a in self.fb.facts if a not in previous]
+        if not new:
+            print("No se dedujo ningún hecho nuevo.")
+        for atom in new:
+            print(f"  {atom.symbol} = {_label(self.fb.value(atom))} ({self.fb.source(atom)})")
 
     def answer(self) -> None:
-        # PSEUDOCODIGO: pedir meta; backward(kb, fb, meta); mostrar valor
-        raise NotImplementedError
+        """Backward chaining sobre una meta elegida por el usuario."""
+        goal = self._ask_atom("Meta a probar: ")
+        if goal is None:
+            return
+        value, _ = backward(self.kb, self.fb, goal)
+        print(f"{goal.symbol} = {_label(value)}")
 
     def how(self) -> None:
-        # PSEUDOCODIGO: pedir conclusión; imprimir explain(kb, fb, atomo)
-        raise NotImplementedError
+        """Explicar cómo se llegó a una conclusión."""
+        atom = self._ask_atom("Conclusión a explicar: ")
+        if atom is not None:
+            print(explain(self.kb, self.fb, atom))
 
     def show(self) -> None:
-        # PSEUDOCODIGO: imprimir cada hecho: symbol = valor (origen)
-        raise NotImplementedError
+        """Imprimir la FB: symbol = valor (origen)."""
+        if not self.fb.facts:
+            print("La base de hechos está vacía.")
+        for atom, (value, source) in self.fb.facts.items():
+            print(f"  {atom.symbol} = {_label(value)} ({source})")
 
     def reset(self) -> None:
-        # PSEUDOCODIGO: vaciar fb.facts (sin tocar la KB)
-        raise NotImplementedError
+        """Vaciar la FB sin tocar la KB."""
+        self.fb.facts.clear()
+        print("Base de hechos reiniciada.")
 
     def run(self) -> None:
-        # PSEUDOCODIGO: bucle de menú con las opciones anteriores
-        raise NotImplementedError
+        """Menú interactivo del usuario."""
+        actions = {
+            "1": self.add_fact, "2": self.infer, "3": self.answer,
+            "4": self.how, "5": self.show, "6": self.reset,
+        }
+        while True:
+            print("\n[Consulta] 1) Agregar hecho  2) Inferir (forward)  3) Responder meta "
+                  "(backward)  4) Cómo  5) Mostrar FB  6) Reiniciar  0) Salir")
+            option = input("Opción: ").strip()
+            if option == "0":
+                return
+            action = actions.get(option)
+            if action is None:
+                print("Opción no válida.")
+            else:
+                action()
